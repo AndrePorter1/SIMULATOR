@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>States of Matter Project</title>
+  <style>
+    /* Background Particle Animation (stars effect) */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0d0d0d;
+      color: white;
+      overflow-x: hidden;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: url('https://www.transparenttextures.com/patterns/stardust.png');
+      opacity: 0.2;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    h1, h2, h3, h4 {
+      text-align: center;
+      text-transform: uppercase;
+      color: #00ccff;
+      margin-bottom: 15px;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      text-shadow: 0 0 15px #00ccff;
+    }
+
+    p, ul {
+      font-size: 1.2em;
+      line-height: 1.8;
+    }
+
+    ul {
+      padding-left: 97px;
+        list-style-type: disc;
+        text-align: left;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    .experiment-title {
+      background-color: rgba(0, 204, 255, 0.1);
+      padding: 10px;
+      border-left: 4px solid #00ccff;
+      font-weight: bold;
+      font-size: 1.3em;
+    }
+
+    .btn {
+      background-color: #00ccff;
+      color: #000;
+      padding: 12px 20px;
+      margin: 10px auto;
+      display: inline-block;
+      border: none;
+      border-radius: 30px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px #00ccff;
+      justify-items: center;
+      justify-content: center;
+        text-align: center;
+
+    }
+
+    .btn:hover {
+      background-color: #0099cc;
+      transform: scale(1.1);
+      box-shadow: 0 0 15px #00ccff;
+    }
+
+    textarea, input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 5px;
+      border: none;
+      font-size: 1em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 1em;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #00ccff;
+      text-align: left;
+    }
+
+    th {
+      background-color: #00ccff;
+      color: #000;
+    }
+
+    .note {
+      background-color: rgba(0, 204, 255, 0.1);
+      border-left: 5px solid #00ccff;
+      padding: 15px;
+      font-style: italic;
+      margin-top: 30px;
+    }
+
+    /* Styling for file upload section */
+    .file-upload {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>The States of Matter Final Assignment</h1>
+
+    <div class="card">
+      <p><strong>Project Overview:</strong> <br>In this project, you will explore the three states of matter—solid, liquid, and gas—through hands-on experiments and interactive activities. You will learn about how matter changes between these states through heating, cooling, and pressure changes, and you will present your findings in a creative way.</p>
+    </div>
+
+    <div class="card">
+      <h2>Objectives</h2>
+      <ul>
+        <li>Understand the properties of solids, liquids, and gases.</li>
+        <li>Observe how matter changes between the three states.</li>
+        <li>Demonstrate your understanding through experiments, quizzes, and presentations.</li>
+        <li>Reflect on how the states of matter are observed in everyday life.</li>
+    </ul>
+    </div>
+
+    <div class="card">
+      <h3>Experiment 1: Freezing Point</h3>
+      <div class="experiment-title">Materials</div>
+      <p>Water, container, freezer</p>
+      <div class="experiment-title">Procedure</div>
+      <p>Freeze water and observe the change from liquid to solid.</p>
+      <label>What happens to the water as it cools?</label>
+      <textarea rows="3"></textarea>
+      <label>At what temperature does the water freeze?</label>
+      <input type="number" placeholder="°C">
+    </div>
+
+    <div class="card">
+      <h3>Experiment 2: Boiling Point</h3>
+      <div class="experiment-title">Materials</div>
+      <p>Water, stove, thermometer</p>
+      <div class="experiment-title">Procedure</div>
+      <p>Heat water and observe the transformation to steam (gas).</p>
+      <label>What changes do you observe as it heats up?</label>
+      <textarea rows="3"></textarea>
+      <label>What is the boiling point of water?</label>
+      <input type="number" placeholder="°C">
+    </div>
+
+    <div class="card">
+      <h3>Interactive Activities</h3>
+      <button class="btn" onclick="takeQuiz('quiz.html')">🎯 Take the Quiz</button>
+      <button class="btn" onclick="startGame('game.html')">🧩 Start Matching Game</button>
+    </div>
+
+    <div class="card">
+      <h3>Assessment</h3>
+      <table>
+        <thead>
+          <tr><th>Criteria</th><th>Weight</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Experiment Docs</td><td>20%</td><td>Observations & data</td></tr>
+          <tr><td>Quiz</td><td>20%</td><td>Understanding concepts</td></tr>
+          <tr><td>Matching Game</td><td>20%</td><td>State identification</td></tr>
+          <tr><td>Presentation</td><td>40%</td><td>Creative explanations</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Due Date:</h3>
+    <p>All experiments, activities, and the final presentation are due on <strong>[April 20, 2025]</strong>. Make sure to submit your presentation by the deadline.</p>
+
+    <h3>Optional Extension:</h3>
+    <p><strong>Virtual Science Simulation:</strong> If available, use an online tool to simulate the changes in states of matter.</p>
+
+    <div class="note">
+      🧪 Be creative and have fun with your discoveries!
+    </div>
+
+    <!-- File Upload Section -->
+    <div class="card">
+      <h3>Submit Your Assignment</h3>
+      <p>Upload your final presentation or project file here:</p>
+      <div class="file-upload">
+        <input type="file" id="file-upload" accept=".pdf,.ppt,.docx" />
+      </div>
+      <button class="btn" onclick="sendAssignmentEmail()">📧 Submit Assignment</button>
+      <p>Click the button above to send your assignment details via email.</p>
+    </div>
+
+  </div>
+<!-- EmailJS Script -->
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script>
+    // Initialize EmailJS with your public key
+    (function() {
+      emailjs.init("Du4pnHfEbvHuhn1yK"); // Use your actual public key
+    })();
+
+    function sendAssignmentEmail() {
+      alert("Submit button clicked!");
+
+      // Get values from the form or page
+      const studentName = prompt("Enter your full name:");
+      const freezingObservation = document.querySelectorAll("textarea")[0].value;
+      const freezingTemp = document.querySelectorAll("input[type='number']")[0].value;
+      const boilingObservation = document.querySelectorAll("textarea")[1].value;
+      const boilingTemp = document.querySelectorAll("input[type='number']")[1].value;
+
+      // Get file (if any) selected by the user
+      const fileInput = document.getElementById('file-upload');
+      const file = fileInput.files[0]; // Get the first file (if any)
+
+      // Get current date
+      const date = new Date().toLocaleDateString();
+
+      // Prepare the email template parameters
+      const templateParams = {
+        student_name: studentName,
+        freezing_observation: freezingObservation,
+        freezing_temp: freezingTemp,
+        boiling_observation: boilingObservation,
+        boiling_temp: boilingTemp,
+        date: date
+      };
+
+      // If a file is selected, attach it to the email
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        
+        // Send file to your email service (you might need a backend API to handle the file upload)
+        emailjs.sendForm('service_snlbk5t', 'template_vi4m4uo', formData)
+          .then(function(response) {
+            alert('✅ Email sent successfully! Thank you for submitting your assignment.');
+            console.log('SUCCESS!', response.status, response.text);
+          }, function(error) {
+            alert('❌ Failed to send email. Please try again.');
+            console.error('FAILED...', error);
+          });
+      } else {
+        // If no file, just send the form details
+        emailjs.send('service_snlbk5t', 'template_vi4m4uo', templateParams)
+          .then(function(response) {
+            alert('✅ Email sent successfully! Thank you for submitting your assignment.');
+            console.log('SUCCESS!', response.status, response.text);
+          }, function(error) {
+            alert('❌ Failed to send email. Please try again.');
+            console.error('FAILED...', error);
+          });
+      }
+    }
+
+    function takeQuiz() {
+      alert("Quiz starting! Get ready.");
+      window.location.href = "quiz.html";
+    }
+
+    function startGame() {
+      alert("Matching game loading...");
+      window.location.href = "game.html";
+    }
+  </script>
+</body>
+</html>

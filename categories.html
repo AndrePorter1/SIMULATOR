@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>States of Matter Categorization</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #0d0d0d;
+      color: white;
+    }
+
+    .container {
+      text-align: center;
+      width: 90%;
+    }
+
+    .categories {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .category {
+      width: 200px;
+      min-height: 200px;
+      border: 2px solid cyan;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      background-color: #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      overflow: hidden;
+      transition: padding 0.3s ease;
+    }
+
+    .category p {
+      margin: 0;
+      font-weight: bold;
+      color: cyan;
+    }
+
+    .words {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .word {
+      width: 80px;
+      height: 40px;
+      margin: 10px;
+      background-color: cyan;
+      color: #0d0d0d;
+      text-align: center;
+      line-height: 40px;
+      border-radius: 5px;
+      cursor: pointer;
+      user-select: none;
+      font-weight: bold;
+    }
+
+    .word:active {
+      background-color: #00cccc;
+    }
+
+    .dragging {
+      opacity: 0.5;
+    }
+
+    .category.over {
+      background-color: #003333;
+    }
+
+    .feedback {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .feedback div {
+      text-align: center;
+    }
+
+    .feedback .correct {
+      color: #00ffcc;
+    }
+
+    .feedback .incorrect {
+      color: #ff4d4d;
+    }
+
+    .feedback span {
+      font-size: 24px;
+      display: block;
+    }
+
+    .error-message {
+      color: #ff4d4d;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    button {
+      font-size: 18px;
+      padding: 15px 30px;
+      background-color: cyan;
+      color: #0d0d0d;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .buz {
+      font-size: 18px;
+      padding: 15px 30px;
+      background-color: cyan;
+      color: #0d0d0d;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    button:hover, .buz:hover {
+      background-color: #00cccc;
+      transform: scale(1.1);
+    }
+
+    button:active, .buz:active {
+      background-color: #009999;
+      transform: scale(1);
+    }
+    .word {
+  touch-action: none;
+  user-select: none;
+}
+
+    @media (max-width: 600px) {
+      .categories {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .category {
+        width: 90%;
+        margin-bottom: 20px;
+      }
+
+      .words {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .word {
+        width: 100%;
+        margin: 5px 0;
+      }
+    }
+    .hamburger {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 30px;
+      color: white;
+      cursor: pointer;
+      z-index: 1100;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Classify the States of Matter</h1>
+    <p>Drag each word into the correct category (Solid, Liquid, or Gas). Click "Check Answers" to evaluate.</p>
+
+    <div class="categories">
+      <div class="category" id="solid">
+        <p>Solid</p>
+        <div id="solidList"></div>
+        <div class="error-message" id="solid-error"></div>
+      </div>
+      <div class="category" id="liquid">
+        <p>Liquid</p>
+        <div id="liquidList"></div>
+        <div class="error-message" id="liquid-error"></div>
+      </div>
+      <div class="category" id="gas">
+        <p>Gas</p>
+        <div id="gasList"></div>
+        <div class="error-message" id="gas-error"></div>
+      </div>
+    </div>
+
+    <div class="words">
+      <div class="word" draggable="true" id="word-ice">Ice</div>
+      <div class="word" draggable="true" id="word-rock">Rock</div>
+      <div class="word" draggable="true" id="word-snow">Snow</div>
+      <div class="word" draggable="true" id="word-wood">Wood</div>
+
+      <div class="word" draggable="true" id="word-water">Water</div>
+      <div class="word" draggable="true" id="word-mercury">Mercury</div>
+      <div class="word" draggable="true" id="word-oil">Oil</div>
+      <div class="word" draggable="true" id="word-honey">Honey</div>
+
+      <div class="word" draggable="true" id="word-air">Air</div>
+      <div class="word" draggable="true" id="word-oxygen">Oxygen</div>
+      <div class="word" draggable="true" id="word-steam">Steam</div>
+      <div class="word" draggable="true" id="word-vapor">Vapor</div>
+    </div>
+
+    <button id="checkAnswerButton">Check Answer ✔️ </button>
+    <button id="resetButton" disabled>Reset Game 🌀</button>
+    <button onclick="window.location.href='index.html'">🏠 Home Page</button>
+
+    <div class="feedback" id="feedback">
+      <div class="correct">
+        <span id="correctCount">✔️ Correct: 0</span>
+      </div>
+      <div class="incorrect">
+        <span id="incorrectCount">❌ Incorrect: 0</span>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const wordsData = [
+      { id: "word-ice", text: "Ice", category: "solid" },
+      { id: "word-rock", text: "Rock", category: "solid" },
+      { id: "word-snow", text: "Snow", category: "solid" },
+      { id: "word-wood", text: "Wood", category: "solid" },
+      { id: "word-water", text: "Water", category: "liquid" },
+      { id: "word-mercury", text: "Mercury", category: "liquid" },
+      { id: "word-oil", text: "Oil", category: "liquid" },
+      { id: "word-honey", text: "Honey", category: "liquid" },
+      { id: "word-air", text: "Air", category: "gas" },
+      { id: "word-oxygen", text: "Oxygen", category: "gas" },
+      { id: "word-steam", text: "Steam", category: "gas" },
+      { id: "word-vapor", text: "Vapor", category: "gas" }
+    ];
+  
+    const categories = document.querySelectorAll('.category');
+    const correctCountEl = document.getElementById('correctCount');
+    const incorrectCountEl = document.getElementById('incorrectCount');
+    const feedback = document.getElementById('feedback');
+    const resetButton = document.getElementById('resetButton');
+    const checkAnswerButton = document.getElementById('checkAnswerButton');
+  
+    const errorMessages = {
+      solid: document.getElementById('solid-error'),
+      liquid: document.getElementById('liquid-error'),
+      gas: document.getElementById('gas-error'),
+    };
+  
+    let originalPositions = {};
+    let answersChecked = false;
+  
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+  
+    function generateWords() {
+      const wordsContainer = document.querySelector('.words');
+      wordsContainer.innerHTML = '';
+      shuffleArray(wordsData);
+  
+      wordsData.forEach(wordData => {
+        const wordElement = document.createElement('div');
+        wordElement.classList.add('word');
+        wordElement.id = wordData.id;
+        wordElement.textContent = wordData.text;
+        wordElement.draggable = true;
+        wordsContainer.appendChild(wordElement);
+        originalPositions[wordData.id] = wordElement.parentElement;
+  
+        // Mouse Drag Events
+        wordElement.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text', e.target.id);
+          e.target.classList.add('dragging');
+        });
+  
+        wordElement.addEventListener('dragend', (e) => {
+          e.target.classList.remove('dragging');
+        });
+  
+        // Touch Events for mobile
+        wordElement.addEventListener('touchstart', (e) => {
+          wordElement.classList.add('dragging');
+          wordElement.dataset.touching = 'true';
+        });
+  
+        wordElement.addEventListener('touchmove', (e) => {
+          const touch = e.touches[0];
+          wordElement.style.position = 'absolute';
+          wordElement.style.left = touch.pageX - wordElement.offsetWidth / 2 + 'px';
+          wordElement.style.top = touch.pageY - wordElement.offsetHeight / 2 + 'px';
+          wordElement.style.zIndex = '1000';
+        });
+  
+        wordElement.addEventListener('touchend', (e) => {
+          wordElement.classList.remove('dragging');
+          wordElement.style.position = '';
+          wordElement.style.left = '';
+          wordElement.style.top = '';
+          wordElement.style.zIndex = '';
+  
+          const touch = e.changedTouches[0];
+          const target = document.elementFromPoint(touch.clientX, touch.clientY);
+  
+          if (target && target.classList.contains('category')) {
+            const categoryId = target.id;
+            if (target.querySelectorAll('.word').length >= 4) {
+              errorMessages[categoryId].textContent = "You can only add up to 4 words in this category.";
+            } else {
+              target.appendChild(wordElement);
+              errorMessages[categoryId].textContent = "";
+            }
+          }
+        });
+      });
+    }
+  
+    categories.forEach(category => {
+      category.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        category.classList.add('over');
+      });
+  
+      category.addEventListener('dragleave', () => {
+        category.classList.remove('over');
+      });
+  
+      category.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const wordId = e.dataTransfer.getData('text');
+        const word = document.getElementById(wordId);
+        const categoryId = category.id;
+  
+        if (category.querySelectorAll('.word').length >= 4) {
+          errorMessages[categoryId].textContent = "You can only add up to 4 words in this category.";
+        } else {
+          category.appendChild(word);
+          category.classList.remove('over');
+          errorMessages[categoryId].textContent = "";
+        }
+      });
+    });
+  
+    function checkAnswers() {
+      const correctAnswers = {
+        "word-ice": "solid",
+        "word-rock": "solid",
+        "word-snow": "solid",
+        "word-wood": "solid",
+        "word-water": "liquid",
+        "word-mercury": "liquid",
+        "word-oil": "liquid",
+        "word-honey": "liquid",
+        "word-air": "gas",
+        "word-oxygen": "gas",
+        "word-steam": "gas",
+        "word-vapor": "gas"
+      };
+  
+      let correctCount = 0;
+      let incorrectCount = 0;
+  
+      const words = document.querySelectorAll('.word');
+      words.forEach(word => {
+        const wordId = word.id;
+        const currentCategory = word.parentElement.id;
+  
+        if (correctAnswers[wordId] === currentCategory) {
+          correctCount++;
+          word.style.backgroundColor = "#00cc99";
+          word.style.color = "#0d0d0d";
+        } else {
+          incorrectCount++;
+          word.style.backgroundColor = "#cc0000";
+          word.style.color = "white";
+        }
+      });
+  
+      correctCountEl.textContent = `✔️ Correct: ${correctCount}`;
+      incorrectCountEl.textContent = `❌ Incorrect: ${incorrectCount}`;
+  
+      feedback.style.opacity = 1;
+      feedback.style.transform = 'translateY(0)';
+      
+      answersChecked = true;
+      resetButton.disabled = false;
+    }
+  
+    function resetGame() {
+      const words = document.querySelectorAll('.word');
+      words.forEach(word => {
+        originalPositions[word.id].appendChild(word);
+        word.style.backgroundColor = "cyan";
+        word.style.color = "#0d0d0d";
+      });
+  
+      categories.forEach(category => {
+        category.classList.remove('over');
+        errorMessages[category.id].textContent = "";
+      });
+  
+      generateWords();
+  
+      correctCountEl.textContent = `✔️ Correct: 0`;
+      incorrectCountEl.textContent = `❌ Incorrect: 0`;
+  
+      feedback.style.opacity = 0;
+      feedback.style.transform = 'translateY(-20px)';
+      
+      answersChecked = false;
+      resetButton.disabled = true;
+    }
+  
+    generateWords();
+    checkAnswerButton.addEventListener('click', checkAnswers);
+    resetButton.addEventListener('click', resetGame);
+  </script>
+  
+
+  
+</body>
+</html>

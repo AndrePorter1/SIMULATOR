@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shooting States of Matter</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(to right, #2e3c58, #4a6283);
+      margin: 0;
+      padding: 0;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 32px;
+      text-align: center;
+    }
+
+    #score, #timer {
+      font-size: 28px;
+      margin: 10px;
+    }
+
+    #timer {
+      font-weight: bold;
+      color: #ffeb3b;
+      text-shadow: 0 0 10px #ffeb3b;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+    #game-area {
+      position: relative;
+      width: 100%;
+      height: 70vh;
+      border: 3px solid #ffffff88;
+      margin-top: 10px;
+      overflow: hidden;
+      background-color: #1c1f2b;
+    }
+
+    .target {
+      position: absolute;
+      font-size: 24px;
+      padding: 10px 15px;
+      border-radius: 50px;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+      animation: float 5s linear forwards;
+    }
+
+    @keyframes float {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(-100%); opacity: 1; }
+    }
+
+    .fact {
+      position: absolute;
+      background-color: rgba(0,0,0,0.7);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 16px;
+      max-width: 200px;
+      pointer-events: none;
+      animation: fadeOut 3s forwards;
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    #game-over {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(30, 30, 47, 0.95);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 36px;
+      color: #f44336;
+      z-index: 10;
+      display: none;
+      animation: fadeInGameOver 1s ease forwards;
+    }
+
+    @keyframes fadeInGameOver {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    #restart-btn {
+      margin-top: 20px;
+      padding: 12px 25px;
+      font-size: 20px;
+      display: inline-block;
+      background-color: #673ab7;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 15px #673ab7;
+      transition: transform 0.3s ease;
+    }
+
+    #restart-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .warning {
+      position: absolute;
+      background-color: red;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 16px;
+      animation: fadeOut 2s forwards;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Shooting States of Matter</h1>
+  <div id="score">Score: 0</div>
+  <div id="timer">Time: 60</div>
+  <div id="game-area"></div>
+
+  <div id="game-over">
+    <div id="game-over-text">Game Over! Final Score: <span id="final-score"></span></div>
+    <button id="restart-btn" onclick="startGame()">🔄 Restart Game</button>
+    <button id="restart-btn" onclick="window.location.href='index.html'">🏠 Home Page</button>
+  </div>
+  <script>
+    const states = [
+      { type: "Solid", fact: "Solids have a fixed shape and volume.", isCorrect: true, color: "green" },
+      { type: "Liquid", fact: "Liquids take the shape of their container.", isCorrect: true, color: "blue" },
+      { type: "Gas", fact: "Gases spread to fill any space available.", isCorrect: true, color: "purple" }
+    ];
+
+    const nonStates = [
+      { name: 'Cloud', penalty: -1, color: 'red' },
+      { name: 'Watermelon', penalty: -1, color: 'orange' },
+      { name: 'Laptop', penalty: -1, color: 'brown' },
+      { name: 'Elephant', penalty: -1, color: 'yellow' }
+    ];
+
+    const gameArea = document.getElementById('game-area');
+    const scoreDisplay = document.getElementById('score');
+    const timerDisplay = document.getElementById('timer');
+    const gameOverElement = document.getElementById('game-over');
+    const finalScoreElement = document.getElementById('final-score');
+
+    let score = 0;
+    let timeLeft = 60;
+    let gameTimer;
+    let spawnInterval;
+    let spawnRate = 500; // Speed up: Start with 500ms spawn rate
+
+    function getRandomPosition() {
+      const x = Math.random() * (gameArea.offsetWidth - 100);
+      const y = Math.random() * (gameArea.offsetHeight - 100);
+      return { x, y };
+    }
+
+    function createTarget() {
+      const isCorrect = Math.random() < 0.5;
+      let data;
+      if (isCorrect) {
+        data = states[Math.floor(Math.random() * states.length)];
+      } else {
+        data = nonStates[Math.floor(Math.random() * nonStates.length)];
+      }
+
+      const target = document.createElement('div');
+      target.className = 'target';
+      target.textContent = isCorrect ? data.type : data.name;
+      target.style.backgroundColor = isCorrect ? data.color : data.color;
+
+      const { x, y } = getRandomPosition();
+      target.style.left = `${x}px`;
+      target.style.top = `${y}px`;
+
+      let clicked = false;
+
+      target.onclick = () => {
+        clicked = true;
+        if (isCorrect) {
+          score += 1;
+          scoreDisplay.textContent = `Score: ${score}`;
+          showFact(data.fact, x, y);
+        } else {
+          score = Math.max(0, score + data.penalty);
+          scoreDisplay.textContent = `Score: ${score}`;
+          showWarning("Oops! That is not a state of matter.", x, y);
+        }
+        target.remove();
+      };
+
+      target.addEventListener("animationend", () => {
+        if (!clicked && isCorrect) {
+          endGame("Game Over! You missed an element!");
+        } else {
+          target.remove();
+        }
+      });
+
+      gameArea.appendChild(target);
+    }
+
+    function showFact(text, x, y) {
+      const fact = document.createElement('div');
+      fact.className = 'fact';
+      fact.textContent = text;
+      fact.style.left = `${x}px`;
+      fact.style.top = `${y}px`;
+      gameArea.appendChild(fact);
+      setTimeout(() => fact.remove(), 3000);
+    }
+
+    function showWarning(text, x, y) {
+      const warn = document.createElement('div');
+      warn.className = 'warning';
+      warn.textContent = text;
+      warn.style.left = `${x}px`;
+      warn.style.top = `${y}px`;
+      gameArea.appendChild(warn);
+      setTimeout(() => warn.remove(), 2000);
+    }
+
+    function updateTimer() {
+      timeLeft -= 1;
+      timerDisplay.textContent = `Time: ${timeLeft}`;
+      if (timeLeft <= 0) {
+        endGame("Time's up!");
+      }
+    }
+
+    function endGame(message = "Game Over!") {
+      clearInterval(gameTimer);
+      clearInterval(spawnInterval);
+      document.getElementById('game-over-text').textContent = `${message} Final Score: ${score}`;
+      finalScoreElement.textContent = score;
+      gameOverElement.style.display = 'flex';
+      gameArea.innerHTML = '';
+    }
+
+    function startGame() {
+      score = 0;
+      timeLeft = 60;
+      scoreDisplay.textContent = "Score: 0";
+      timerDisplay.textContent = "Time: 60";
+      gameOverElement.style.display = 'none';
+      gameArea.innerHTML = '';
+
+      spawnInterval = setInterval(createTarget, spawnRate); // Start with fast spawn rate (500ms)
+      gameTimer = setInterval(updateTimer, 1000);
+    }
+
+    window.onload = startGame;
+  </script>
+</body>
+</html>
