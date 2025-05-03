@@ -19,12 +19,7 @@
 
     .container {
       text-align: center;
-      width: 100%;
-      max-width: 1200px;
-    }
-
-    h1 {
-      font-size: 24px;
+      width: 90%;
     }
 
     .categories {
@@ -32,7 +27,6 @@
       justify-content: space-around;
       margin-top: 20px;
       flex-wrap: wrap;
-      gap: 20px;
     }
 
     .category {
@@ -161,7 +155,6 @@
       background-color: #009999;
       transform: scale(1);
     }
-    
     .word {
       touch-action: none;
       user-select: none;
@@ -184,15 +177,10 @@
       }
 
       .word {
-        width: 90%;
+        width: 100%;
         margin: 5px 0;
       }
-
-      h1 {
-        font-size: 20px;
-      }
     }
-
     .hamburger {
       position: absolute;
       top: 20px;
@@ -273,119 +261,108 @@
       { id: "word-steam", text: "Steam", category: "gas" },
       { id: "word-vapor", text: "Vapor", category: "gas" }
     ];
-
+  
     const categories = document.querySelectorAll('.category');
     const correctCountEl = document.getElementById('correctCount');
     const incorrectCountEl = document.getElementById('incorrectCount');
     const feedback = document.getElementById('feedback');
     const resetButton = document.getElementById('resetButton');
     const checkAnswerButton = document.getElementById('checkAnswerButton');
-
+  
     const errorMessages = {
       solid: document.getElementById('solid-error'),
       liquid: document.getElementById('liquid-error'),
       gas: document.getElementById('gas-error'),
     };
-
+  
     let originalPositions = {};
     let answersChecked = false;
-
+  
     function shuffleArray(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
       }
     }
-
+  
     function generateWords() {
       const wordsContainer = document.querySelector('.words');
       wordsContainer.innerHTML = '';
       shuffleArray(wordsData);
-
+  
       wordsData.forEach(wordData => {
         const wordElement = document.createElement('div');
         wordElement.classList.add('word');
         wordElement.id = wordData.id;
         wordElement.textContent = wordData.text;
         wordElement.draggable = true;
-        wordElement.addEventListener('dragstart', dragStart);
-        wordElement.addEventListener('dragend', dragEnd);
         wordsContainer.appendChild(wordElement);
+        originalPositions[wordData.id] = wordElement.parentElement;
+  
+        wordElement.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text', e.target.id);
+          e.target.classList.add('dragging');
+        });
+  
+        wordElement.addEventListener('dragend', () => {
+          document.querySelectorAll('.word').forEach(word => word.classList.remove('dragging'));
+        });
       });
     }
-
-    function dragStart(e) {
-      e.target.classList.add('dragging');
-    }
-
-    function dragEnd(e) {
-      e.target.classList.remove('dragging');
-    }
-
-    function allowDrop(e) {
-      e.preventDefault();
-      const draggingWord = document.querySelector('.dragging');
-      const category = e.target;
-      if (category.classList.contains('category')) {
+  
+    categories.forEach(category => {
+      category.addEventListener('dragover', (e) => {
+        e.preventDefault();
         category.classList.add('over');
-      }
-    }
-
-    function drop(e) {
-      const draggingWord = document.querySelector('.dragging');
-      const category = e.target;
-      if (category.classList.contains('category')) {
+      });
+  
+      category.addEventListener('dragleave', () => {
         category.classList.remove('over');
-        const categoryId = category.id;
-        if (draggingWord) {
-          const wordId = draggingWord.id;
-          originalPositions[wordId] = categoryId;
-          category.querySelector(`#${categoryId}List`).appendChild(draggingWord);
-        }
-      }
-    }
-
-    function checkAnswers() {
-      let correctCount = 0;
-      let incorrectCount = 0;
-      answersChecked = true;
-
+      });
+  
+      category.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const wordId = e.dataTransfer.getData('text');
+        const wordElement = document.getElementById(wordId);
+        category.querySelector('#' + category.id + 'List').appendChild(wordElement);
+        category.classList.remove('over');
+      });
+    });
+  
+    checkAnswerButton.addEventListener('click', () => {
+      if (answersChecked) return;
+      let correct = 0;
+      let incorrect = 0;
+  
       wordsData.forEach(wordData => {
-        const wordId = wordData.id;
-        const category = originalPositions[wordId];
-        if (category === wordData.category) {
-          correctCount++;
+        const wordElement = document.getElementById(wordData.id);
+        const category = wordElement.parentElement;
+  
+        if (category.id === wordData.category) {
+          correct++;
         } else {
-          incorrectCount++;
+          incorrect++;
         }
       });
-
-      correctCountEl.textContent = `✔️ Correct: ${correctCount}`;
-      incorrectCountEl.textContent = `❌ Incorrect: ${incorrectCount}`;
-
-      feedback.style.opacity = 1;
+  
+      correctCountEl.textContent = `✔️ Correct: ${correct}`;
+      incorrectCountEl.textContent = `❌ Incorrect: ${incorrect}`;
+      feedback.style.opacity = '1';
       feedback.style.transform = 'translateY(0)';
       resetButton.disabled = false;
-      checkAnswerButton.disabled = true;
-    }
-
-    function resetGame() {
-      originalPositions = {};
-      feedback.style.opacity = 0;
+      answersChecked = true;
+    });
+  
+    resetButton.addEventListener('click', () => {
+      generateWords();
+      correctCountEl.textContent = `✔️ Correct: 0`;
+      incorrectCountEl.textContent = `❌ Incorrect: 0`;
+      feedback.style.opacity = '0';
       feedback.style.transform = 'translateY(-20px)';
       resetButton.disabled = true;
-      checkAnswerButton.disabled = false;
-      generateWords();
-    }
-
-    checkAnswerButton.addEventListener('click', checkAnswers);
-    resetButton.addEventListener('click', resetGame);
-
-    categories.forEach(category => {
-      category.addEventListener('dragover', allowDrop);
-      category.addEventListener('drop', drop);
+      answersChecked = false;
     });
-
+  
     generateWords();
   </script>
 </body>
