@@ -323,43 +323,90 @@
         e.preventDefault();
         const wordId = e.dataTransfer.getData('text');
         const wordElement = document.getElementById(wordId);
-        category.querySelector('#' + category.id + 'List').appendChild(wordElement);
-        category.classList.remove('over');
+        const targetCategory = category.id;
+  
+        if (wordElement && wordElement !== category && !answersChecked) {
+          category.querySelector(`#${targetCategory}List`).appendChild(wordElement);
+          wordElement.classList.add('dragging');
+          checkAnswerButton.disabled = false;
+        }
       });
     });
   
+    // Handle button clicks and checks
     checkAnswerButton.addEventListener('click', () => {
-      if (answersChecked) return;
+      answersChecked = true;
+      resetButton.disabled = false;
+      checkAnswerButton.disabled = true;
       let correct = 0;
       let incorrect = 0;
   
-      wordsData.forEach(wordData => {
-        const wordElement = document.getElementById(wordData.id);
-        const category = wordElement.parentElement;
+      wordsData.forEach(word => {
+        const wordElement = document.getElementById(word.id);
+        const targetCategory = wordElement.closest('.category').id;
+        const isCorrect = targetCategory === word.category;
   
-        if (category.id === wordData.category) {
+        if (isCorrect) {
           correct++;
         } else {
           incorrect++;
+          errorMessages[word.category].textContent = `Incorrect! ${word.text} is not ${word.category}`;
         }
       });
   
       correctCountEl.textContent = `✔️ Correct: ${correct}`;
       incorrectCountEl.textContent = `❌ Incorrect: ${incorrect}`;
-      feedback.style.opacity = '1';
+      feedback.style.opacity = 1;
       feedback.style.transform = 'translateY(0)';
-      resetButton.disabled = false;
-      answersChecked = true;
     });
   
     resetButton.addEventListener('click', () => {
-      generateWords();
-      correctCountEl.textContent = `✔️ Correct: 0`;
-      incorrectCountEl.textContent = `❌ Incorrect: 0`;
-      feedback.style.opacity = '0';
-      feedback.style.transform = 'translateY(-20px)';
-      resetButton.disabled = true;
       answersChecked = false;
+      resetButton.disabled = true;
+      checkAnswerButton.disabled = false;
+      errorMessages.solid.textContent = '';
+      errorMessages.liquid.textContent = '';
+      errorMessages.gas.textContent = '';
+      generateWords();
+    });
+  
+    // Mobile touch events
+    let touchTarget = null;
+  
+    document.querySelectorAll('.word').forEach(word => {
+      word.addEventListener('touchstart', (e) => {
+        touchTarget = e.target;
+        e.target.classList.add('dragging');
+      });
+  
+      word.addEventListener('touchend', () => {
+        touchTarget = null;
+        document.querySelectorAll('.word').forEach(w => w.classList.remove('dragging'));
+      });
+    });
+  
+    document.querySelectorAll('.category').forEach(category => {
+      category.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (el && el.classList.contains('category')) {
+          el.classList.add('over');
+        }
+      });
+  
+      category.addEventListener('touchend', (e) => {
+        if (!touchTarget) return;
+        const touch = e.changedTouches[0];
+        const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (dropTarget && dropTarget.classList.contains('category')) {
+          const list = dropTarget.querySelector(`#${dropTarget.id}List`);
+          list.appendChild(touchTarget);
+          dropTarget.classList.remove('over');
+        }
+        touchTarget = null;
+        document.querySelectorAll('.category').forEach(cat => cat.classList.remove('over'));
+      });
     });
   
     generateWords();
