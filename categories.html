@@ -19,7 +19,12 @@
 
     .container {
       text-align: center;
-      width: 90%;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    h1 {
+      font-size: 24px;
     }
 
     .categories {
@@ -27,6 +32,7 @@
       justify-content: space-around;
       margin-top: 20px;
       flex-wrap: wrap;
+      gap: 20px;
     }
 
     .category {
@@ -155,10 +161,11 @@
       background-color: #009999;
       transform: scale(1);
     }
+    
     .word {
-  touch-action: none;
-  user-select: none;
-}
+      touch-action: none;
+      user-select: none;
+    }
 
     @media (max-width: 600px) {
       .categories {
@@ -177,10 +184,15 @@
       }
 
       .word {
-        width: 100%;
+        width: 90%;
         margin: 5px 0;
       }
+
+      h1 {
+        font-size: 20px;
+      }
     }
+
     .hamburger {
       position: absolute;
       top: 20px;
@@ -246,7 +258,6 @@
     </div>
   </div>
 
-
   <script>
     const wordsData = [
       { id: "word-ice", text: "Ice", category: "solid" },
@@ -262,193 +273,120 @@
       { id: "word-steam", text: "Steam", category: "gas" },
       { id: "word-vapor", text: "Vapor", category: "gas" }
     ];
-  
+
     const categories = document.querySelectorAll('.category');
     const correctCountEl = document.getElementById('correctCount');
     const incorrectCountEl = document.getElementById('incorrectCount');
     const feedback = document.getElementById('feedback');
     const resetButton = document.getElementById('resetButton');
     const checkAnswerButton = document.getElementById('checkAnswerButton');
-  
+
     const errorMessages = {
       solid: document.getElementById('solid-error'),
       liquid: document.getElementById('liquid-error'),
       gas: document.getElementById('gas-error'),
     };
-  
+
     let originalPositions = {};
     let answersChecked = false;
-  
+
     function shuffleArray(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
       }
     }
-  
+
     function generateWords() {
       const wordsContainer = document.querySelector('.words');
       wordsContainer.innerHTML = '';
       shuffleArray(wordsData);
-  
+
       wordsData.forEach(wordData => {
         const wordElement = document.createElement('div');
         wordElement.classList.add('word');
         wordElement.id = wordData.id;
         wordElement.textContent = wordData.text;
         wordElement.draggable = true;
+        wordElement.addEventListener('dragstart', dragStart);
+        wordElement.addEventListener('dragend', dragEnd);
         wordsContainer.appendChild(wordElement);
-        originalPositions[wordData.id] = wordElement.parentElement;
-  
-        // Mouse Drag Events
-        wordElement.addEventListener('dragstart', (e) => {
-          e.dataTransfer.setData('text', e.target.id);
-          e.target.classList.add('dragging');
-        });
-  
-        wordElement.addEventListener('dragend', (e) => {
-          e.target.classList.remove('dragging');
-        });
-  
-        // Touch Events for mobile
-        wordElement.addEventListener('touchstart', (e) => {
-          wordElement.classList.add('dragging');
-          wordElement.dataset.touching = 'true';
-        });
-  
-        wordElement.addEventListener('touchmove', (e) => {
-          const touch = e.touches[0];
-          wordElement.style.position = 'absolute';
-          wordElement.style.left = touch.pageX - wordElement.offsetWidth / 2 + 'px';
-          wordElement.style.top = touch.pageY - wordElement.offsetHeight / 2 + 'px';
-          wordElement.style.zIndex = '1000';
-        });
-  
-        wordElement.addEventListener('touchend', (e) => {
-          wordElement.classList.remove('dragging');
-          wordElement.style.position = '';
-          wordElement.style.left = '';
-          wordElement.style.top = '';
-          wordElement.style.zIndex = '';
-  
-          const touch = e.changedTouches[0];
-          const target = document.elementFromPoint(touch.clientX, touch.clientY);
-  
-          if (target && target.classList.contains('category')) {
-            const categoryId = target.id;
-            if (target.querySelectorAll('.word').length >= 4) {
-              errorMessages[categoryId].textContent = "You can only add up to 4 words in this category.";
-            } else {
-              target.appendChild(wordElement);
-              errorMessages[categoryId].textContent = "";
-            }
-          }
-        });
       });
     }
-  
-    categories.forEach(category => {
-      category.addEventListener('dragover', (e) => {
-        e.preventDefault();
+
+    function dragStart(e) {
+      e.target.classList.add('dragging');
+    }
+
+    function dragEnd(e) {
+      e.target.classList.remove('dragging');
+    }
+
+    function allowDrop(e) {
+      e.preventDefault();
+      const draggingWord = document.querySelector('.dragging');
+      const category = e.target;
+      if (category.classList.contains('category')) {
         category.classList.add('over');
-      });
-  
-      category.addEventListener('dragleave', () => {
+      }
+    }
+
+    function drop(e) {
+      const draggingWord = document.querySelector('.dragging');
+      const category = e.target;
+      if (category.classList.contains('category')) {
         category.classList.remove('over');
-      });
-  
-      category.addEventListener('drop', (e) => {
-        e.preventDefault();
-        const wordId = e.dataTransfer.getData('text');
-        const word = document.getElementById(wordId);
         const categoryId = category.id;
-  
-        if (category.querySelectorAll('.word').length >= 4) {
-          errorMessages[categoryId].textContent = "You can only add up to 4 words in this category.";
-        } else {
-          category.appendChild(word);
-          category.classList.remove('over');
-          errorMessages[categoryId].textContent = "";
+        if (draggingWord) {
+          const wordId = draggingWord.id;
+          originalPositions[wordId] = categoryId;
+          category.querySelector(`#${categoryId}List`).appendChild(draggingWord);
         }
-      });
-    });
-  
+      }
+    }
+
     function checkAnswers() {
-      const correctAnswers = {
-        "word-ice": "solid",
-        "word-rock": "solid",
-        "word-snow": "solid",
-        "word-wood": "solid",
-        "word-water": "liquid",
-        "word-mercury": "liquid",
-        "word-oil": "liquid",
-        "word-honey": "liquid",
-        "word-air": "gas",
-        "word-oxygen": "gas",
-        "word-steam": "gas",
-        "word-vapor": "gas"
-      };
-  
       let correctCount = 0;
       let incorrectCount = 0;
-  
-      const words = document.querySelectorAll('.word');
-      words.forEach(word => {
-        const wordId = word.id;
-        const currentCategory = word.parentElement.id;
-  
-        if (correctAnswers[wordId] === currentCategory) {
+      answersChecked = true;
+
+      wordsData.forEach(wordData => {
+        const wordId = wordData.id;
+        const category = originalPositions[wordId];
+        if (category === wordData.category) {
           correctCount++;
-          word.style.backgroundColor = "#00cc99";
-          word.style.color = "#0d0d0d";
         } else {
           incorrectCount++;
-          word.style.backgroundColor = "#cc0000";
-          word.style.color = "white";
         }
       });
-  
+
       correctCountEl.textContent = `✔️ Correct: ${correctCount}`;
       incorrectCountEl.textContent = `❌ Incorrect: ${incorrectCount}`;
-  
+
       feedback.style.opacity = 1;
       feedback.style.transform = 'translateY(0)';
-      
-      answersChecked = true;
       resetButton.disabled = false;
+      checkAnswerButton.disabled = true;
     }
-  
+
     function resetGame() {
-      const words = document.querySelectorAll('.word');
-      words.forEach(word => {
-        originalPositions[word.id].appendChild(word);
-        word.style.backgroundColor = "cyan";
-        word.style.color = "#0d0d0d";
-      });
-  
-      categories.forEach(category => {
-        category.classList.remove('over');
-        errorMessages[category.id].textContent = "";
-      });
-  
-      generateWords();
-  
-      correctCountEl.textContent = `✔️ Correct: 0`;
-      incorrectCountEl.textContent = `❌ Incorrect: 0`;
-  
+      originalPositions = {};
       feedback.style.opacity = 0;
       feedback.style.transform = 'translateY(-20px)';
-      
-      answersChecked = false;
       resetButton.disabled = true;
+      checkAnswerButton.disabled = false;
+      generateWords();
     }
-  
-    generateWords();
+
     checkAnswerButton.addEventListener('click', checkAnswers);
     resetButton.addEventListener('click', resetGame);
-  </script>
-  
 
-  
+    categories.forEach(category => {
+      category.addEventListener('dragover', allowDrop);
+      category.addEventListener('drop', drop);
+    });
+
+    generateWords();
+  </script>
 </body>
 </html>
