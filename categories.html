@@ -156,11 +156,11 @@
       transform: scale(1);
     }
     .word {
-      touch-action: none;
-      user-select: none;
-    }
+  touch-action: none;
+  user-select: none;
+}
 
-     /* Mobile Fix */
+    /* Mobile Fix */
     @media (max-width: 600px) {
       body {
         height: auto;
@@ -189,6 +189,7 @@
       cursor: pointer;
       z-index: 1100;
     }
+  }
   </style>
 </head>
 <body>
@@ -245,6 +246,7 @@
     </div>
   </div>
 
+
   <script>
     const wordsData = [
       { id: "word-ice", text: "Ice", category: "solid" },
@@ -298,13 +300,49 @@
         wordsContainer.appendChild(wordElement);
         originalPositions[wordData.id] = wordElement.parentElement;
   
+        // Mouse Drag Events
         wordElement.addEventListener('dragstart', (e) => {
           e.dataTransfer.setData('text', e.target.id);
           e.target.classList.add('dragging');
         });
   
-        wordElement.addEventListener('dragend', () => {
-          document.querySelectorAll('.word').forEach(word => word.classList.remove('dragging'));
+        wordElement.addEventListener('dragend', (e) => {
+          e.target.classList.remove('dragging');
+        });
+  
+        // Touch Events for mobile
+        wordElement.addEventListener('touchstart', (e) => {
+          wordElement.classList.add('dragging');
+          wordElement.dataset.touching = 'true';
+        });
+  
+        wordElement.addEventListener('touchmove', (e) => {
+          const touch = e.touches[0];
+          wordElement.style.position = 'absolute';
+          wordElement.style.left = touch.pageX - wordElement.offsetWidth / 2 + 'px';
+          wordElement.style.top = touch.pageY - wordElement.offsetHeight / 2 + 'px';
+          wordElement.style.zIndex = '1000';
+        });
+  
+        wordElement.addEventListener('touchend', (e) => {
+          wordElement.classList.remove('dragging');
+          wordElement.style.position = '';
+          wordElement.style.left = '';
+          wordElement.style.top = '';
+          wordElement.style.zIndex = '';
+  
+          const touch = e.changedTouches[0];
+          const target = document.elementFromPoint(touch.clientX, touch.clientY);
+  
+          if (target && target.classList.contains('category')) {
+            const categoryId = target.id;
+            if (target.querySelectorAll('.word').length >= 4) {
+              errorMessages[categoryId].textContent = "You can only add up to 4 words in this category.";
+            } else {
+              target.appendChild(wordElement);
+              errorMessages[categoryId].textContent = "";
+            }
+          }
         });
       });
     }
@@ -322,94 +360,95 @@
       category.addEventListener('drop', (e) => {
         e.preventDefault();
         const wordId = e.dataTransfer.getData('text');
-        const wordElement = document.getElementById(wordId);
-        const targetCategory = category.id;
+        const word = document.getElementById(wordId);
+        const categoryId = category.id;
   
-        if (wordElement && wordElement !== category && !answersChecked) {
-          category.querySelector(`#${targetCategory}List`).appendChild(wordElement);
-          wordElement.classList.add('dragging');
-          checkAnswerButton.disabled = false;
+        if (category.querySelectorAll('.word').length >= 4) {
+          errorMessages[categoryId].textContent = "You can only add up to 4 words in this category.";
+        } else {
+          category.appendChild(word);
+          category.classList.remove('over');
+          errorMessages[categoryId].textContent = "";
         }
       });
     });
   
-    // Handle button clicks and checks
-    checkAnswerButton.addEventListener('click', () => {
-      answersChecked = true;
-      resetButton.disabled = false;
-      checkAnswerButton.disabled = true;
-      let correct = 0;
-      let incorrect = 0;
+    function checkAnswers() {
+      const correctAnswers = {
+        "word-ice": "solid",
+        "word-rock": "solid",
+        "word-snow": "solid",
+        "word-wood": "solid",
+        "word-water": "liquid",
+        "word-mercury": "liquid",
+        "word-oil": "liquid",
+        "word-honey": "liquid",
+        "word-air": "gas",
+        "word-oxygen": "gas",
+        "word-steam": "gas",
+        "word-vapor": "gas"
+      };
   
-      wordsData.forEach(word => {
-        const wordElement = document.getElementById(word.id);
-        const targetCategory = wordElement.closest('.category').id;
-        const isCorrect = targetCategory === word.category;
+      let correctCount = 0;
+      let incorrectCount = 0;
   
-        if (isCorrect) {
-          correct++;
+      const words = document.querySelectorAll('.word');
+      words.forEach(word => {
+        const wordId = word.id;
+        const currentCategory = word.parentElement.id;
+  
+        if (correctAnswers[wordId] === currentCategory) {
+          correctCount++;
+          word.style.backgroundColor = "#00cc99";
+          word.style.color = "#0d0d0d";
         } else {
-          incorrect++;
-          errorMessages[word.category].textContent = `Incorrect! ${word.text} is not ${word.category}`;
+          incorrectCount++;
+          word.style.backgroundColor = "#cc0000";
+          word.style.color = "white";
         }
       });
   
-      correctCountEl.textContent = `✔️ Correct: ${correct}`;
-      incorrectCountEl.textContent = `❌ Incorrect: ${incorrect}`;
+      correctCountEl.textContent = `✔️ Correct: ${correctCount}`;
+      incorrectCountEl.textContent = `❌ Incorrect: ${incorrectCount}`;
+  
       feedback.style.opacity = 1;
       feedback.style.transform = 'translateY(0)';
-    });
+      
+      answersChecked = true;
+      resetButton.disabled = false;
+    }
   
-    resetButton.addEventListener('click', () => {
+    function resetGame() {
+      const words = document.querySelectorAll('.word');
+      words.forEach(word => {
+        originalPositions[word.id].appendChild(word);
+        word.style.backgroundColor = "cyan";
+        word.style.color = "#0d0d0d";
+      });
+  
+      categories.forEach(category => {
+        category.classList.remove('over');
+        errorMessages[category.id].textContent = "";
+      });
+  
+      generateWords();
+  
+      correctCountEl.textContent = `✔️ Correct: 0`;
+      incorrectCountEl.textContent = `❌ Incorrect: 0`;
+  
+      feedback.style.opacity = 0;
+      feedback.style.transform = 'translateY(-20px)';
+      
       answersChecked = false;
       resetButton.disabled = true;
-      checkAnswerButton.disabled = false;
-      errorMessages.solid.textContent = '';
-      errorMessages.liquid.textContent = '';
-      errorMessages.gas.textContent = '';
-      generateWords();
-    });
-  
-    // Mobile touch events
-    let touchTarget = null;
-  
-    document.querySelectorAll('.word').forEach(word => {
-      word.addEventListener('touchstart', (e) => {
-        touchTarget = e.target;
-        e.target.classList.add('dragging');
-      });
-  
-      word.addEventListener('touchend', () => {
-        touchTarget = null;
-        document.querySelectorAll('.word').forEach(w => w.classList.remove('dragging'));
-      });
-    });
-  
-    document.querySelectorAll('.category').forEach(category => {
-      category.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        const el = document.elementFromPoint(touch.clientX, touch.clientY);
-        if (el && el.classList.contains('category')) {
-          el.classList.add('over');
-        }
-      });
-  
-      category.addEventListener('touchend', (e) => {
-        if (!touchTarget) return;
-        const touch = e.changedTouches[0];
-        const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
-        if (dropTarget && dropTarget.classList.contains('category')) {
-          const list = dropTarget.querySelector(`#${dropTarget.id}List`);
-          list.appendChild(touchTarget);
-          dropTarget.classList.remove('over');
-        }
-        touchTarget = null;
-        document.querySelectorAll('.category').forEach(cat => cat.classList.remove('over'));
-      });
-    });
+    }
   
     generateWords();
+    checkAnswerButton.addEventListener('click', checkAnswers);
+    resetButton.addEventListener('click', resetGame);
   </script>
+  
+
+  
 </body>
 </html>
